@@ -1,14 +1,17 @@
 import React from 'react';
 import styled from 'styled-components';
 import PostAuthor from './PostAuthor';
+import ReactionButtons from './ReactionButtons';
+import TimeAgo from './TimeAgo';
 
 const PostComponent = ({ post }) => {
-  console.log(post);
   return (
-    <Article key={Number(post.id)}>
+    <Article>
       <PostTitle>{post.title}</PostTitle>
-      <PostContent>{post.content}</PostContent>
+      <PostContent>{post.body}</PostContent>
       <PostAuthor userId={post.userId} />
+      <TimeAgo timestamp={post.date} />
+      <ReactionButtons post={post} />
     </Article>
   );
 };

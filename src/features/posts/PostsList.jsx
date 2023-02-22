@@ -1,23 +1,48 @@
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import PostComponent from './components/PostComponent';
-import { selectAllPosts } from './postsSlice';
-import React from 'react';
+import { selectAllPosts, getPostsError, getPostsStatus, fetchPosts } from './postsSlice';
+import React, { useEffect, useRef } from 'react';
 import styled from 'styled-components';
 
 const PostsList = () => {
+  let firstRender = useRef(false);
+  const dispatch = useDispatch();
+
   const posts = useSelector(selectAllPosts);
+  const postsStatus = useSelector(getPostsStatus);
+  const error = useSelector(getPostsError);
+
+  useEffect(() => {
+    if (firstRender.current === false) {
+      if (postsStatus === 'idle') {
+        dispatch(fetchPosts());
+      }
+
+      return () => {
+        firstRender.current = true;
+      };
+    }
+  }, [postsStatus, dispatch]);
+
+  let content;
+  if (postsStatus === 'loading') {
+    content = <p>Loading...</p>;
+  } else if (postsStatus === 'succeeded') {
+    const orderedPosts = posts.slice().sort((a, b) => b.date.localeCompare(a.date));
+    content = orderedPosts.map((post) => (
+      <PostComponent
+        post={post}
+        key={`${post.id} + ${Math.random() * (1000 - 1 + 1) + 1}`}
+      />
+    ));
+  } else if (postsStatus === 'failed') {
+    content = <p>{error}</p>;
+  }
 
   return (
     <Section>
       <Title>Posts</Title>
-      <PostsContainer>
-        {posts.map((post) => (
-          <PostComponent
-            post={post}
-            key={post.title}
-          />
-        ))}
-      </PostsContainer>
+      <PostsContainer>{content}</PostsContainer>
     </Section>
   );
 };
